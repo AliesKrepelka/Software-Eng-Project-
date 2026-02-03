@@ -1,6 +1,6 @@
 HERE IS A LIST OF KNOWN BUGS:
 
-When a patron is deleted and another is added the next ID number added doest go up by 1.It instead stays the same as the previous patrons ID number.
+When a patron is deleted and another is added the next ID number added doesnt go up by 1.It instead stays the same as the previous patrons ID number.
 
 Any Patrons and books created are not saved once the program is closed. Need to add a save at the end of the program that loads the save once it is opened 
 
