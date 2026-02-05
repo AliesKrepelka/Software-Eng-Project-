@@ -1,0 +1,169 @@
+PS C:\Users\User\OneDrive\Desktop\Software Project> .\app.exe
+
+--- Library Management System ---
+1. Patron Options
+2. Book Options
+3. Loan Options
+4. Exit
+Enter choice: 2
+
+--- Book Options ---
+1. Add Book
+2. Edit Book
+3. Delete Book
+4. Print All Books
+5. Return to Main Menu
+Enter choice: 1
+Enter book title: Bible
+Enter author: God
+Enter ISBN (numbers only): 001
+Enter cost: 80
+Book added successfully. Library ID: 1
+
+--- Book Options ---
+1. Add Book
+2. Edit Book
+3. Delete Book
+4. Print All Books
+5. Return to Main Menu
+Enter choice: 4
+ID: 1 | Title: Bible | Author: God | ISBN: 1 | Status: IN
+
+--- Book Options ---
+1. Add Book
+2. Edit Book
+3. Delete Book
+4. Print All Books
+5. Return to Main Menu
+Enter choice: 5
+Returning to Main Menu...
+
+--- Library Management System ---
+1. Patron Options
+2. Book Options
+3. Loan Options
+4. Exit
+Enter choice: 3
+
+--- Loan Options ---
+1. Check Out Book
+2. Check In Book
+3. List All Overdue Books
+4. List All Checked Out Books
+5. Return to Main Menu
+Enter choice: 1
+
+Enter patron NAME or ID (0 to cancel): Wes Roddie 
+Patron not found.
+Enter patron NAME or ID (0 to cancel): 0
+Checkout conditions not met.
+
+--- Loan Options ---
+1. Check Out Book
+2. Check In Book
+3. List All Overdue Books
+4. List All Checked Out Books
+5. Return to Main Menu
+Enter choice: 5
+Returning to Main Menu...
+
+--- Library Management System ---
+1. Patron Options
+2. Book Options
+3. Loan Options
+4. Exit
+Enter choice: 1
+
+--- Patron Options ---
+1. Add Patron
+2. Edit Patron
+3. Delete Patron
+4. Print All Patrons
+5. Return to Main Menu
+Enter choice: 1
+Enter patron's first name: Wes Roddie
+Enter patron's last name: Patron added successfully. Patron ID: 1
+
+--- Patron Options ---
+1. Add Patron
+2. Edit Patron
+3. Delete Patron
+4. Print All Patrons
+5. Return to Main Menu
+Enter choice: 1
+Enter patron's first name: Wes 
+Enter patron's last name: Roddie
+Patron added successfully. Patron ID: 2
+
+--- Patron Options ---
+1. Add Patron
+2. Edit Patron
+3. Delete Patron
+4. Print All Patrons
+5. Return to Main Menu
+Enter choice: 4
+Name: Wes Roddie | ID: 1 | Fines: $0 | Books: 0
+Name: Wes Roddie | ID: 2 | Fines: $0 | Books: 0
+
+--- Patron Options ---
+1. Add Patron
+2. Edit Patron
+3. Delete Patron
+4. Print All Patrons
+5. Return to Main Menu
+Enter choice: 5
+Returning to Main Menu...
+
+--- Library Management System ---
+1. Patron Options
+2. Book Options
+3. Loan Options
+4. Exit
+Enter choice: 2
+
+--- Book Options ---
+1. Add Book
+2. Edit Book
+3. Delete Book
+4. Print All Books
+5. Return to Main Menu
+Enter choice: 5
+Returning to Main Menu...
+
+--- Library Management System ---
+1. Patron Options
+2. Book Options
+3. Loan Options
+4. Exit
+Enter choice: 3
+
+--- Loan Options ---
+1. Check Out Book
+2. Check In Book
+3. List All Overdue Books
+4. List All Checked Out Books
+5. Return to Main Menu
+Enter choice: 1
+
+Enter patron NAME or ID (0 to cancel): Wes Roddie
+Enter book TITLE, ISBN, or ID (0 to cancel): Bible
+Book checked out successfully.
+
+--- Loan Options ---
+1. Check Out Book
+2. Check In Book
+3. List All Overdue Books
+4. List All Checked Out Books
+5. Return to Main Menu
+Enter choice: 4
+
+--- All Checked Out Books ---
+Book: Bible | Author: God | Due: 12-02-2026 (Due in 6 days)
+
+--- Loan Options ---
+1. Check Out Book
+2. Check In Book
+3. List All Overdue Books
+4. List All Checked Out Books
+5. Return to Main Menu
+Enter choice:
