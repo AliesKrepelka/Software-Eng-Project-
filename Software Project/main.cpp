@@ -4,6 +4,19 @@
 #include "BooksCollection.h"
 #include "LoansCollection.h"
 
+// Helper function to safely read an integer from user input
+int readChoice() {
+    int choice;
+    while (!(std::cin >> choice)) {
+        // Clear error flag and input buffer
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input. Please enter a number: ";
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear remaining buffer
+    return choice;
+}
+
 void patronOptions(PatronsCollection& patrons) {
     int choice;
     do {
@@ -14,8 +27,7 @@ void patronOptions(PatronsCollection& patrons) {
         std::cout << "4. Print All Patrons\n";
         std::cout << "5. Return to Main Menu\n";
         std::cout << "Enter choice: ";
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
+        choice = readChoice();
 
         switch (choice) {
             case 1:
@@ -49,8 +61,7 @@ void bookOptions(BooksCollection& books) {
         std::cout << "4. Print All Books\n";
         std::cout << "5. Return to Main Menu\n";
         std::cout << "Enter choice: ";
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
+        choice = readChoice();
 
         switch (choice) {
             case 1:
@@ -81,10 +92,10 @@ void loanOptions(LoansCollection& loans, PatronsCollection& patrons, BooksCollec
         std::cout << "1. Check Out Book\n";
         std::cout << "2. Check In Book\n";
         std::cout << "3. List All Overdue Books\n";
-        std::cout << "4. Return to Main Menu\n";
+        std::cout << "4. List All Checked Out Books\n";
+        std::cout << "5. Return to Main Menu\n";
         std::cout << "Enter choice: ";
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
+        choice = readChoice();
 
         switch (choice) {
             case 1:
@@ -97,12 +108,15 @@ void loanOptions(LoansCollection& loans, PatronsCollection& patrons, BooksCollec
                 loans.ListAllOverdueBooks();
                 break;
             case 4:
+                loans.ListAllCheckedOutBooks(books);
+                break;
+            case 5:
                 std::cout << "Returning to Main Menu...\n";
                 break;
             default:
                 std::cout << "Invalid choice. Please try again.\n";
         }
-    } while (choice != 4);
+    } while (choice != 5);
 }
 
 int main() {
@@ -118,8 +132,7 @@ int main() {
         std::cout << "3. Loan Options\n";
         std::cout << "4. Exit\n";
         std::cout << "Enter choice: ";
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
+        choice = readChoice();
 
         switch (choice) {
             case 1:

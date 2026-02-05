@@ -92,6 +92,38 @@ void LoansCollection::ListAllOverdueBooks() {
     }
 }
 
+void LoansCollection::ListAllCheckedOutBooks(BooksCollection &allBooks) {
+    if (loansList.empty()) {
+        std::cout << "No books currently checked out.\n";
+        return;
+    }
+
+    std::cout << "\n--- All Checked Out Books ---\n";
+    for (auto* loan : loansList) {
+        Books* book = allBooks.FindBookByID(loan->getBookID());
+        if (!book) {
+            std::cout << "Book ID: " << loan->getBookID() << " (Record Missing)\n";
+            continue;
+        }
+        
+        std::tm dueDate = loan->getDueDate();
+        std::tm today = getCurrentDate();
+        int daysUntilDue = calculateDaysDifference(dueDate, today);
+        
+        std::cout << "Book: " << book->getTitle() << " | Author: " << book->getAuthor()
+                  << " | Due: " << tmToString(dueDate);
+        
+        if (daysUntilDue < 0) {
+            std::cout << " (OVERDUE by " << (-daysUntilDue) << " days)";
+        } else if (daysUntilDue == 0) {
+            std::cout << " (Due Today)";
+        } else {
+            std::cout << " (Due in " << daysUntilDue << " days)";
+        }
+        std::cout << "\n";
+    }
+}
+
 void LoansCollection::ListBooksForPatron(PatronsCollection &allPatrons, BooksCollection &allBooks) {
     Patron* patron = allPatrons.PromptForSearchMechanism();
     if (!patron) {
