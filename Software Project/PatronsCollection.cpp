@@ -1,161 +1,154 @@
-#include<iostream>
-#include<string>
-#include<vector>
-#include <limits> 
-#include <algorithm> 
 #include "PatronsCollection.h"
-#include "Patron.h"
+#include <iostream>
+#include <limits>
+#include <algorithm>
+#include <cctype>
 
-using namespace std;
+static std::string trim(const std::string& s) {
+    size_t start = s.find_first_not_of(" \t\r\n");
+    if (start == std::string::npos) return "";
+    size_t end = s.find_last_not_of(" \t\r\n");
+    return s.substr(start, end - start + 1);
+}
 
-// This is included as a reference if you wish to use this type of template style coding for hw4 or beyond.
-template<typename T>
-T getNumericInput(const string& prompt) {
-    T input;
-    cout << prompt;
-    while (!(cin >> input)) {
-        cin.clear(); // Clear error flags
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard the line
-        cout << "Invalid input. Please enter a valid number: ";
+static bool isAllDigits(const std::string& s) {
+    return !s.empty() &&
+           std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+PatronsCollection::~PatronsCollection() {
+    for (auto* p : patronsList) {
+        delete p;
     }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard any extra input to prepare for next input
-    return input;
+    patronsList.clear();
 }
 
-// Function to get a string input from the user with a prompt
-string getStringInput(const string& prompt) {
-    cout << prompt;
-    string input;
-    getline(cin >> ws, input); // Properly handles leading whitespace
-    return input;
-}
-
-// Function to get integer input from the user with a prompt
-int getIntInput(const string& prompt) {
-    int input;
-    cout << prompt;
-    while(!(cin >> input)) {
-        cout << "Invalid input, please enter a number: ";
-        cin.clear(); // clear the error flag
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard input
-    }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard any remaining input
-    return input;
-}
-
-// Adds a new patron to the collection
 void PatronsCollection::AddPatron() {
-    cout << "\n--- Add a New Patron ---\n";
-    string firstName = getStringInput("Enter patron's first name: ");
-    string lastName = getStringInput("Enter patron's last name: ");
-    int ID = patronsList.size(); // ID is the next index in the vector
-    
-    string fullName = firstName + " " + lastName;
-    auto* patron = new Patron(fullName, ID);
-    patronsList.push_back(patron);
-    cout << "Patron added successfully.\n";
-}
+    std::string first, last;
+    std::cout << "Enter patron's first name: ";
+    std::cin >> first;
+    std::cout << "Enter patron's last name: ";
+    std::cin >> last;
 
-// Prompts the user to choose a search mechanism and returns the corresponding Patron
-Patron* PatronsCollection::PromptForSearchMechanism() {
-    while (true) {
-        string method = getStringInput("Search by name or ID? (name/id): ");
-        if (method == "name") {
-            string name = getStringInput("Enter the patron's full name: ");
-            return FindPatronByName(name);
-        } else if (method == "id") {
-            int id = getIntInput("Enter the patron's ID: ");
-            return FindPatronByID(id);
-        } else {
-            cout << "Invalid option. Please type 'name' or 'id'.\n";
+    int nextID = patronsList.empty() ? 1 : 1;
+    for (auto* p : patronsList) {
+        if (p->getPatronID() >= nextID) {
+            nextID = p->getPatronID() + 1;
         }
     }
+
+    Patron* newPatron = new Patron(first + " " + last, nextID);
+    patronsList.push_back(newPatron);
+    std::cout << "Patron added successfully. Patron ID: " << nextID << "\n";
 }
 
-// Finds a patron by name
-Patron* PatronsCollection::FindPatronByName(string name) {
-    for (auto* patron : patronsList) {
-        if (patron->getName() == name) {
-            return patron;
-        }
-    }
-    return nullptr; // Patron not found
-}
-
-// Finds a patron by ID
-Patron* PatronsCollection::FindPatronByID(int id) {
-    for (auto* patron : patronsList) {
-        if (patron->getPatronID() == id) {
-            return patron;
-        }
-    }
-    return nullptr; // Patron not found
-}
-
-// Prints all patrons in the collection
-void PatronsCollection::PrintAllPatrons() const {
-    cout << "\n--- List of All Patrons ---\n";
-    for (const auto* patron : patronsList) {
-        cout << "ID: " << patron->getPatronID() << ", Name: " << patron->getName() << ", Fines: $" << patron->getFineBalance() << ", Books Checked Out: " << patron->getNumBooks() << endl;
-    }
-}
-
-// Edits an existing patron's details
 void PatronsCollection::EditPatron() {
-    cout << "\n--- Edit a Patron ---\n";
-    Patron* patron = PromptForSearchMechanism();
-    if (patron != nullptr) {
-        string firstName = getStringInput("Enter patron's new first name: ");
-        string lastName = getStringInput("Enter patron's new last name: ");
-        patron->setName(firstName + " " + lastName);
-        cout << "Patron updated successfully.\n";
-    } else {
-        cout << "Patron not found.\n";
-    }
+    Patron* p = PromptForSearchMechanism();
+    if (!p) return;
+
+    std::cout << "Editing patron: " << p->getName() << "\n";
+    std::cout << "Current name: " << p->getName() << "\n";
+    std::cout << "Enter new name (leave blank to keep): ";
+    std::string name;
+    std::getline(std::cin, name);
+    name = trim(name);
+    if (!name.empty()) p->setName(name);
+
+    std::cout << "Patron updated.\n";
 }
 
-// Deletes a patron from the collection
 void PatronsCollection::DeletePatron() {
-    cout << "\n--- Delete a Patron ---\n";
-    Patron* patron = PromptForSearchMechanism();
-    if (patron != nullptr) {
-        auto it = find(patronsList.begin(), patronsList.end(), patron);
-        if (it != patronsList.end()) {
-            delete *it; // Free the memory
-            patronsList.erase(it); // Remove from the list
-            cout << "Patron deleted successfully.\n";
-        }
-    } else {
-        cout << "Patron not found.\n";
+    Patron* p = PromptForSearchMechanism();
+    if (!p) return;
+
+    auto it = std::find(patronsList.begin(), patronsList.end(), p);
+    if (it != patronsList.end()) {
+        delete *it;
+        patronsList.erase(it);
+        std::cout << "Patron deleted.\n";
     }
 }
 
-// Prints details of a specific patron
-void PatronsCollection::PrintPatron() {
-    cout << "\n--- Print a Patron's Details ---\n";
-    Patron* patron = PromptForSearchMechanism();
-    if (patron != nullptr) {
-        cout << "ID: " << patron->getPatronID() << ", Name: " << patron->getName() << ", Fines: $" << patron->getFineBalance() << ", Books Checked Out: " << patron->getNumBooks() << endl;
-    } else {
-        cout << "Patron not found.\n";
+void PatronsCollection::PrintAllPatrons() const {
+    if (patronsList.empty()) {
+        std::cout << "No patrons in the collection.\n";
+        return;
+    }
+    for (const auto* p : patronsList) {
+        std::cout << "Name: " << p->getName() << " | ID: " << p->getPatronID() 
+                  << " | Fines: $" << p->getFineBalance() << " | Books: " << p->getNumBooks() << "\n";
     }
 }
 
-// Handles fine payment for a patron
-void PatronsCollection::PayFine() {
-    cout << "\n--- Pay a Patron's Fine ---\n";
-    Patron* patron = PromptForSearchMechanism();
-    if (patron != nullptr) {
-        cout << "Current Fine: $" << patron->getFineBalance() << endl;
-        float amount = getNumericInput<float>("Enter payment amount: $");
-        if (amount > 0) {
-            float newBalance = max(0.0f, patron->getFineBalance() - amount);
-            patron->setFineBalance(newBalance);
-            cout << "New Fine Balance: $" << newBalance << endl;
+Patron* PatronsCollection::FindPatronByID(int id) {
+    for (auto* p : patronsList) {
+        if (p->getPatronID() == id)
+            return p;
+    }
+    return nullptr;
+}
+
+Patron* PatronsCollection::FindPatronByName(std::string name) {
+    name = trim(name);
+    for (auto* p : patronsList) {
+        if (p->getName() == name)
+            return p;
+    }
+    return nullptr;
+}
+
+Patron* PatronsCollection::PromptForSearchMechanism() {
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    while (true) {
+        std::cout << "Enter patron NAME or ID (0 to cancel): ";
+        std::string input;
+        std::getline(std::cin, input);
+        input = trim(input);
+
+        if (input == "0") return nullptr;
+
+        if (isAllDigits(input)) {
+            Patron* p = FindPatronByID(std::stoi(input));
+            if (!p) std::cout << "Patron not found.\n";
+            else return p;
         } else {
-            cout << "Invalid payment amount.\n";
+            Patron* p = FindPatronByName(input);
+            if (!p) std::cout << "Patron not found.\n";
+            else return p;
         }
-    } else {
-        cout << "Patron not found.\n";
+    }
+}
+
+void PatronsCollection::PrintPatron() {
+    Patron* p = PromptForSearchMechanism();
+    if (!p) return;
+    std::cout << "Patron: " << p->getName() << "\n";
+    std::cout << "ID: " << p->getPatronID() << "\n";
+    std::cout << "Fines: $" << p->getFineBalance() << "\n";
+    std::cout << "Books Checked Out: " << p->getNumBooks() << "\n";
+}
+
+void PatronsCollection::PayFine() {
+    Patron* p = PromptForSearchMechanism();
+    if (!p) return;
+
+    float balance = p->getFineBalance();
+    if (balance <= 0) {
+        std::cout << "No fines to pay.\n";
+        return;
+    }
+
+    std::cout << "Current fine balance: $" << balance << "\n";
+    std::cout << "Enter amount to pay: $";
+    float payment = 0.0f;
+    std::cin >> payment;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    if (payment > 0) {
+        float newBalance = balance - payment;
+        if (newBalance < 0) newBalance = 0;
+        p->setFineBalance(newBalance);
+        std::cout << "Payment processed. New balance: $" << newBalance << "\n";
     }
 }

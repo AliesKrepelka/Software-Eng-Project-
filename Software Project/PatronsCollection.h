@@ -13,6 +13,9 @@ public:
     // Adds a new patron to the collection
     void AddPatron();
 
+    // Cleans up allocated patrons
+    ~PatronsCollection();
+
     // Edits an existing patron's details
     void EditPatron();
 

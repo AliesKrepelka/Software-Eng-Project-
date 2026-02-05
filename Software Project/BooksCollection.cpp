@@ -1,175 +1,172 @@
 #include "BooksCollection.h"
 #include <iostream>
-#include <limits> 
-#include <algorithm> 
-BooksCollection::BooksCollection() {
+#include <limits>
+#include <algorithm>
+#include <cctype>
+
+static std::string trim(const std::string& s) {
+    size_t start = s.find_first_not_of(" \t\r\n");
+    if (start == std::string::npos) return "";
+    size_t end = s.find_last_not_of(" \t\r\n");
+    return s.substr(start, end - start + 1);
 }
 
+static bool isAllDigits(const std::string& s) {
+    return !s.empty() &&
+           std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+BooksCollection::BooksCollection() = default;
+
 BooksCollection::~BooksCollection() {
-    for (auto* book : booksList) {
-        delete book;
+    for (auto* b : booksList) {
+        delete b;
     }
+    booksList.clear();
 }
 
 void BooksCollection::AddBook() {
     std::string title, author;
-    int isbn;
-    float cost;
+    int isbn = 0;
+    float cost = 0.0f;
 
     std::cout << "Enter book title: ";
     std::getline(std::cin, title);
+    if (title.empty()) std::getline(std::cin, title);
+
     std::cout << "Enter author: ";
     std::getline(std::cin, author);
-    std::cout << "Enter ISBN: ";
+
+    std::cout << "Enter ISBN (numbers only): ";
     std::cin >> isbn;
+
     std::cout << "Enter cost: ";
     std::cin >> cost;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the newline character from the buffer
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    int id = Books::nextBookID++;
-    Books* newBook = new Books(author, title, isbn, id, cost);
-    booksList.push_back(newBook);
-    
-    std::cout << "Book added successfully.\n";
+    int libraryID = ++Books::nextBookID;
+    Books* book = new Books(author, title, isbn, libraryID, cost, Books::IN);
+    booksList.push_back(book);
+    std::cout << "Book added successfully. Library ID: " << libraryID << "\n";
 }
 
 void BooksCollection::EditBook() {
-    Books* book = PromptForSearchMechanism();
-    if (!book) {
-        std::cout << "Book not found.\n";
-        return;
-    }
+    Books* b = PromptForSearchMechanism();
+    if (!b) return;
 
-    std::cout << "Editing Book: " << book->getTitle() << "\n";
-    std::cout << "Select the attribute to edit: \n";
-    std::cout << "1. Title\n";
-    std::cout << "2. Author\n";
-    std::cout << "3. ISBN\n";
-    std::cout << "4. Cost\n";
-    std::cout << "Enter choice: ";
-    int choice;
-    std::cin >> choice;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the newline character from the buffer
+    std::cout << "Editing book ID " << b->getLibraryID() << "\n";
+    std::cout << "Current title: " << b->getTitle() << "\n";
+    std::cout << "Enter new title (leave blank to keep): ";
+    std::string title;
+    std::getline(std::cin, title);
+    title = trim(title);
+    if (!title.empty()) b->setTitle(title);
 
-    switch (choice) {
-        case 1: {
-            std::string newTitle;
-            std::cout << "Enter new title: ";
-            std::getline(std::cin, newTitle);
-            book->setTitle(newTitle);
-            break;
-        }
-        case 2: {
-            std::string newAuthor;
-            std::cout << "Enter new author: ";
-            std::getline(std::cin, newAuthor);
-            book->setAuthor(newAuthor);
-            break;
-        }
-        case 3: {
-            int newISBN;
-            std::cout << "Enter new ISBN: ";
-            std::cin >> newISBN;
-            book->setISBN(newISBN);
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
-            break;
-        }
-        case 4: {
-            float newCost;
-            std::cout << "Enter new cost: ";
-            std::cin >> newCost;
-            book->setCost(newCost);
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear the buffer
-            break;
-        }
-        default:
-            std::cout << "Invalid choice. Returning to main menu.\n";
-    }
+    std::cout << "Current author: " << b->getAuthor() << "\n";
+    std::cout << "Enter new author (leave blank to keep): ";
+    std::string author;
+    std::getline(std::cin, author);
+    author = trim(author);
+    if (!author.empty()) b->setAuthor(author);
 
-    std::cout << "Book updated successfully.\n";
+    std::cout << "Current ISBN: " << b->getISBN() << "\n";
+    std::cout << "Enter new ISBN (0 to keep): ";
+    int isbn = 0;
+    std::cin >> isbn;
+    if (isbn != 0) b->setISBN(isbn);
+
+    std::cout << "Current cost: " << b->getCost() << "\n";
+    std::cout << "Enter new cost (-1 to keep): ";
+    float cost = -1.0f;
+    std::cin >> cost;
+    if (cost >= 0.0f) b->setCost(cost);
+
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << "Book updated.\n";
 }
 
-
 void BooksCollection::DeleteBook() {
-    Books* book = PromptForSearchMechanism();
-    if (!book) {
-        std::cout << "Book not found.\n";
-        return;
-    }
+    Books* b = PromptForSearchMechanism();
+    if (!b) return;
 
-    auto it = std::find_if(booksList.begin(), booksList.end(), [book](const Books* b) { return b == book; });
+    auto it = std::find(booksList.begin(), booksList.end(), b);
     if (it != booksList.end()) {
         delete *it;
         booksList.erase(it);
-        std::cout << "Book deleted successfully.\n";
-    } else {
-        std::cout << "Error deleting the book.\n";
+        std::cout << "Book deleted.\n";
     }
 }
 
 Books* BooksCollection::PromptForSearchMechanism() {
-    std::cout << "Search by (1) Title, (2) ISBN, or (3) ID? ";
-    int choice;
-    std::cin >> choice;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear buffer
+    while (true) {
+        std::cout << "Enter book TITLE, ISBN, or ID (0 to cancel): ";
+        std::string input;
+        std::getline(std::cin, input);
+        input = trim(input);
 
-    if (choice == 1) {
-        std::string title;
-        std::cout << "Enter title: ";
-        std::getline(std::cin, title);
-        return FindBookByTitle(title);
-    } else if (choice == 2) {
-        int isbn;
-        std::cout << "Enter ISBN: ";
-        std::cin >> isbn;
-        return FindBookByISBN(isbn);
-    } else if (choice == 3) {
-        int id;
-        std::cout << "Enter ID: ";
-        std::cin >> id;
-        return FindBookByID(id);
-    } else {
-        std::cout << "Invalid choice.\n";
-        return nullptr;
+        if (input == "0") return nullptr;
+
+        if (isAllDigits(input)) {
+            int value = std::stoi(input);
+            Books* byId = FindBookByID(value);
+            if (byId) return byId;
+            Books* byIsbn = FindBookByISBN(value);
+            if (byIsbn) return byIsbn;
+            std::cout << "Book not found.\n";
+        } else {
+            Books* b = FindBookByTitle(input);
+            if (!b) std::cout << "Book not found.\n";
+            else return b;
+        }
     }
 }
 
 Books* BooksCollection::FindBookByTitle(const std::string& title) {
-    for (auto* book : booksList) {
-        if (book->getTitle() == title) return book;
+    for (auto* b : booksList) {
+        if (b->getTitle() == title) return b;
     }
     return nullptr;
 }
 
 Books* BooksCollection::FindBookByISBN(int isbn) {
-    for (auto* book : booksList) {
-        if (book->getISBN() == isbn) return book;
+    for (auto* b : booksList) {
+        if (b->getISBN() == isbn) return b;
     }
     return nullptr;
 }
 
 Books* BooksCollection::FindBookByID(int id) {
-    for (auto* book : booksList) {
-        if (book->getLibraryID() == id) return book;
+    for (auto* b : booksList) {
+        if (b->getLibraryID() == id) return b;
     }
     return nullptr;
 }
 
 void BooksCollection::PrintAllBooks() const {
-    for (const auto* book : booksList) {
-        std::cout << "ID: " << book->getLibraryID() << ", Title: " << book->getTitle() 
-                  << ", Author: " << book->getAuthor() << ", ISBN: " << book->getISBN() 
-                  << ", Cost: $" << book->getCost() << std::endl;
+    if (booksList.empty()) {
+        std::cout << "No books in the collection.\n";
+        return;
+    }
+    for (auto* b : booksList) {
+        std::cout << "ID: " << b->getLibraryID()
+                  << " | Title: " << b->getTitle()
+                  << " | Author: " << b->getAuthor()
+                  << " | ISBN: " << b->getISBN()
+                  << " | Status: " << (b->getCurrentBookStatus() == Books::IN ? "IN" :
+                                      b->getCurrentBookStatus() == Books::OUT ? "OUT" : "LOST")
+                  << "\n";
     }
 }
 
 void BooksCollection::PrintBook() {
-    Books* book = PromptForSearchMechanism();
-    if (book) {
-        std::cout << "ID: " << book->getLibraryID() << ", Title: " << book->getTitle() 
-                  << ", Author: " << book->getAuthor() << ", ISBN: " << book->getISBN() 
-                  << ", Cost: $" << book->getCost() << std::endl;
-    } else {
-        std::cout << "Book not found.\n";
-    }
+    Books* b = PromptForSearchMechanism();
+    if (!b) return;
+    std::cout << "ID: " << b->getLibraryID()
+              << " | Title: " << b->getTitle()
+              << " | Author: " << b->getAuthor()
+              << " | ISBN: " << b->getISBN()
+              << " | Cost: " << b->getCost()
+              << " | Status: " << (b->getCurrentBookStatus() == Books::IN ? "IN" :
+                                  b->getCurrentBookStatus() == Books::OUT ? "OUT" : "LOST")
+              << "\n";
 }
