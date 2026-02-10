@@ -1,0 +1,77 @@
+Library Management System – Persistence Update
+
+Date: February 10, 2026
+
+Summary
+Persistent storage was added so data is saved between program runs. JSON files are now used to store patrons, books, and loans. This document was added to give the team a clear overview of what changed and how it works.
+
+What now persists
+Patrons are stored in patrons.json
+Books are stored in books.json
+Loans are stored in loans.json
+
+Application behavior
+When the program starts, each collection automatically attempts to load its JSON file.
+When the program exits, all current data is automatically saved.
+If the JSON files do not already exist, the program still runs normally and creates them on exit.
+
+Code changes by file
+
+BooksCollection.h
+Added load and save function declarations for JSON files.
+Added a file path string to track the data file.
+
+BooksCollection.cpp
+Implemented JSON serialization and deserialization.
+The constructor sets the data file path to books.json and loads saved data.
+The destructor saves the current data before cleanup.
+The next book ID is restored based on the highest loaded book ID to prevent duplicates.
+
+PatronsCollection.h
+Added a constructor declaration.
+Added load and save function declarations for JSON files.
+Added a file path string for patron data.
+
+PatronsCollection.cpp
+Implemented JSON serialization and deserialization.
+The constructor loads data from patrons.json.
+The destructor saves data on shutdown.
+Persisted fields include patron ID, name, fine balance, and number of checked-out books.
+
+Loans.h
+Added static methods to get and set the next loan ID.
+This allows loan numbering to continue correctly after loading saved data.
+
+Loans.cpp
+Implemented the new static loan ID setter and getter.
+
+LoansCollection.h
+Added constructor and destructor declarations.
+Added load and save function declarations for JSON files.
+Added a file path string for loan data.
+
+LoansCollection.cpp
+Implemented JSON serialization and deserialization.
+The constructor loads data from loans.json.
+The destructor saves loan data on shutdown.
+Stored fields include loan ID, book ID, patron ID, due date, and loan status.
+After loading, the next loan ID is set to the highest loaded ID plus one to avoid collisions.
+
+main.cpp
+Added a startup message indicating saved data is loaded if available.
+Added a shutdown message indicating data is being saved.
+No changes were made to menu behavior or user interaction.
+
+Validation performed
+A syntax-only compile was run using g++ with C++17 enabled.
+No compilation errors were reported.
+
+Quick test steps
+Run the application and add patrons, books, and at least one loan.
+Exit the application.
+Verify that patrons.json, books.json, and loans.json were created and contain data.
+Run the application again and confirm that the previously entered records are still available.
+
+Notes
+The JSON parser is intentionally simple and expects the same structure the program writes.
+Manually changing the JSON structure may cause records not to load correctly.
