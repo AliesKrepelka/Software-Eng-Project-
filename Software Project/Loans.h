@@ -21,6 +21,8 @@ public:
     void setPatronID(int id);
     void setDueDate(const std::tm& date);
     void setStatus(LoanStatus status);
+    static void setNextLoanID(int nextID);
+    static int getNextLoanID();
 
 private:
     static int nextLoanID; // Static member to track the next available loan ID

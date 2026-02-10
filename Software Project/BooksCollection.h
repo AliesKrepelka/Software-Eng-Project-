@@ -18,9 +18,12 @@ public:
     Books* FindBookByID(int id);
     void PrintAllBooks() const;
     void PrintBook();
+    bool LoadFromJsonFile(const std::string& filePath);
+    bool SaveToJsonFile(const std::string& filePath) const;
 
 private:
     std::vector<Books*> booksList;
+    std::string dataFilePath;
 };
 
 #endif // BOOKSCOLLECTION_H

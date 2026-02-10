@@ -2,6 +2,9 @@
 #include <iostream>
 #include <ctime>
 #include <algorithm>
+#include <fstream>
+#include <regex>
+#include <sstream>
 
 std::tm getCurrentDate() {
     std::time_t t = std::time(nullptr);
@@ -22,6 +25,28 @@ int calculateDaysDifference(const std::tm& dueDate, const std::tm& currentDate) 
     std::time_t current_time = std::mktime(&curCopy);
     const double secondsPerDay = 60 * 60 * 24;
     return static_cast<int>(std::difftime(due_time, current_time) / secondsPerDay);
+}
+
+static bool extractIntField(const std::string& objectText, const std::string& key, int& value) {
+    std::regex pattern("\"" + key + "\"\\s*:\\s*(-?\\d+)");
+    std::smatch match;
+    if (!std::regex_search(objectText, match, pattern)) {
+        return false;
+    }
+    value = std::stoi(match[1].str());
+    return true;
+}
+
+LoansCollection::LoansCollection() : dataFilePath("loans.json") {
+    LoadFromJsonFile(dataFilePath);
+}
+
+LoansCollection::~LoansCollection() {
+    SaveToJsonFile(dataFilePath);
+    for (auto* loan : loansList) {
+        delete loan;
+    }
+    loansList.clear();
 }
 
 void LoansCollection::CheckOutBook(PatronsCollection &allPatrons, BooksCollection &allBooks) {
@@ -233,4 +258,97 @@ void LoansCollection::ReportLost(PatronsCollection &allPatrons, BooksCollection 
     } else {
         std::cout << "Loan record for the book not found.\n";
     }
+}
+
+bool LoansCollection::SaveToJsonFile(const std::string& filePath) const {
+    std::ofstream out(filePath, std::ios::trunc);
+    if (!out) {
+        return false;
+    }
+
+    out << "{\n";
+    out << "  \"loans\": [\n";
+    for (size_t i = 0; i < loansList.size(); ++i) {
+        const Loans* loan = loansList[i];
+        std::tm dueDate = loan->getDueDate();
+
+        out << "    {\n";
+        out << "      \"loanID\": " << loan->getLoanID() << ",\n";
+        out << "      \"bookID\": " << loan->getBookID() << ",\n";
+        out << "      \"patronID\": " << loan->getPatronID() << ",\n";
+        out << "      \"dueYear\": " << (dueDate.tm_year + 1900) << ",\n";
+        out << "      \"dueMonth\": " << (dueDate.tm_mon + 1) << ",\n";
+        out << "      \"dueDay\": " << dueDate.tm_mday << ",\n";
+        out << "      \"status\": " << static_cast<int>(loan->getStatus()) << "\n";
+        out << "    }";
+        if (i + 1 < loansList.size()) {
+            out << ",";
+        }
+        out << "\n";
+    }
+    out << "  ]\n";
+    out << "}\n";
+    return true;
+}
+
+bool LoansCollection::LoadFromJsonFile(const std::string& filePath) {
+    std::ifstream in(filePath);
+    if (!in) {
+        return false;
+    }
+
+    std::stringstream buffer;
+    buffer << in.rdbuf();
+    const std::string content = buffer.str();
+
+    for (auto* loan : loansList) {
+        delete loan;
+    }
+    loansList.clear();
+
+    int maxLoanID = 0;
+    std::regex objectPattern("\\{[^\\{\\}]*\\}");
+    auto begin = std::sregex_iterator(content.begin(), content.end(), objectPattern);
+    auto end = std::sregex_iterator();
+    for (auto it = begin; it != end; ++it) {
+        const std::string objectText = it->str();
+
+        int loanID = 0;
+        int bookID = 0;
+        int patronID = 0;
+        int dueYear = 0;
+        int dueMonth = 0;
+        int dueDay = 0;
+        int status = 0;
+
+        bool ok = extractIntField(objectText, "loanID", loanID)
+            && extractIntField(objectText, "bookID", bookID)
+            && extractIntField(objectText, "patronID", patronID)
+            && extractIntField(objectText, "dueYear", dueYear)
+            && extractIntField(objectText, "dueMonth", dueMonth)
+            && extractIntField(objectText, "dueDay", dueDay)
+            && extractIntField(objectText, "status", status);
+
+        if (!ok) {
+            continue;
+        }
+
+        std::tm dueDate = {};
+        dueDate.tm_year = dueYear - 1900;
+        dueDate.tm_mon = dueMonth - 1;
+        dueDate.tm_mday = dueDay;
+        std::mktime(&dueDate);
+
+        Loans* loadedLoan = new Loans(bookID, patronID, dueDate);
+        loadedLoan->setLoanID(loanID);
+        loadedLoan->setStatus(static_cast<Loans::LoanStatus>(status));
+        loansList.push_back(loadedLoan);
+
+        if (loanID > maxLoanID) {
+            maxLoanID = loanID;
+        }
+    }
+
+    Loans::setNextLoanID(maxLoanID + 1);
+    return true;
 }

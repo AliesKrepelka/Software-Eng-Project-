@@ -124,6 +124,8 @@ int main() {
     BooksCollection books;
     LoansCollection loans;
 
+    std::cout << "Loaded saved data from JSON files (if available).\n";
+
     int choice;
     do {
         std::cout << "\n--- Library Management System ---\n";
@@ -152,5 +154,6 @@ int main() {
         }
     } while (choice != 4);
 
+    std::cout << "Saving data to JSON files...\n";
     return 0;
 }

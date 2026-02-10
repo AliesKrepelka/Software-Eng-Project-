@@ -16,3 +16,5 @@ void Loans::setBookID(int id) { bookID = id; }
 void Loans::setPatronID(int id) { patronID = id; }
 void Loans::setDueDate(const std::tm& date) { dueDate = date; }
 void Loans::setStatus(LoanStatus status) { this->status = status; }
+void Loans::setNextLoanID(int nextID) { nextLoanID = nextID; }
+int Loans::getNextLoanID() { return nextLoanID; }

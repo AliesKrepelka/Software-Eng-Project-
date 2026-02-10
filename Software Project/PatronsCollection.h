@@ -10,6 +10,8 @@
 // as well as printing details for a single patron or all patrons and handling fine payments.
 class PatronsCollection {
 public:
+    PatronsCollection();
+
     // Adds a new patron to the collection
     void AddPatron();
 
@@ -39,9 +41,12 @@ public:
 
     // Handles the payment of fines for a specific patron
     void PayFine();
+    bool LoadFromJsonFile(const std::string& filePath);
+    bool SaveToJsonFile(const std::string& filePath) const;
 
 private:
     std::vector<Patron*> patronsList; // A vector to store pointers to Patron objects
+    std::string dataFilePath;
 };
 
 #endif // PATRONSCOLLECTION_H

@@ -10,6 +10,9 @@
 // and checking in books, listing overdue books
 class LoansCollection {
 public:
+    LoansCollection();
+    ~LoansCollection();
+
     // Checks out a book for a patron
     void CheckOutBook(PatronsCollection &allPatrons, BooksCollection &allBooks);
 
@@ -36,9 +39,12 @@ public:
 
     // Reports a book as lost
     void ReportLost(PatronsCollection &allPatrons, BooksCollection &allBooks);
+    bool LoadFromJsonFile(const std::string& filePath);
+    bool SaveToJsonFile(const std::string& filePath) const;
 
 private:
     std::vector<Loans*> loansList; // Stores pointers to Loans
+    std::string dataFilePath;
 };
 
 #endif // LOANSCOLLECTION_H
