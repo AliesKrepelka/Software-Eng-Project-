@@ -1,0 +1,131 @@
+Before vs After Code Changes
+
+1) Fixed double-enter issue during patron search
+File: PatronsCollection.cpp
+
+Before:
+```cpp
+Patron* PatronsCollection::PromptForSearchMechanism() {
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    while (true) {
+```
+
+After:
+```cpp
+Patron* PatronsCollection::PromptForSearchMechanism() {
+    while (true) {
+```
+
+
+2) Trimmed book title input on add
+File: BooksCollection.cpp
+
+Before:
+```cpp
+std::cout << "Enter book title: ";
+std::getline(std::cin, title);
+if (title.empty()) std::getline(std::cin, title);
+```
+
+After:
+```cpp
+std::cout << "Enter book title: ";
+std::getline(std::cin, title);
+if (title.empty()) std::getline(std::cin, title);
+title = trim(title);
+```
+
+
+3) Trimmed author input on add
+File: BooksCollection.cpp
+
+Before:
+```cpp
+std::cout << "Enter author: ";
+std::getline(std::cin, author);
+```
+
+After:
+```cpp
+std::cout << "Enter author: ";
+std::getline(std::cin, author);
+author = trim(author);
+```
+
+
+4) Made title search whitespace-tolerant
+File: BooksCollection.cpp
+
+Before:
+```cpp
+Books* BooksCollection::FindBookByTitle(const std::string& title) {
+    for (auto* b : booksList) {
+        if (b->getTitle() == title) return b;
+    }
+    return nullptr;
+}
+```
+
+After:
+```cpp
+Books* BooksCollection::FindBookByTitle(const std::string& title) {
+    const std::string targetTitle = trim(title);
+    for (auto* b : booksList) {
+        if (trim(b->getTitle()) == targetTitle) return b;
+    }
+    return nullptr;
+}
+```
+
+
+5) Save books immediately after add
+File: BooksCollection.cpp
+
+Before:
+```cpp
+booksList.push_back(book);
+std::cout << "Book added successfully. Library ID: " << libraryID << "\n";
+```
+
+After:
+```cpp
+booksList.push_back(book);
+SaveToJsonFile(dataFilePath);
+std::cout << "Book added successfully. Library ID: " << libraryID << "\n";
+```
+
+
+6) Save books immediately after edit
+File: BooksCollection.cpp
+
+Before:
+```cpp
+std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+std::cout << "Book updated.\n";
+```
+
+After:
+```cpp
+std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+SaveToJsonFile(dataFilePath);
+std::cout << "Book updated.\n";
+```
+
+7) Save books immediately after delete
+File: BooksCollection.cpp
+
+Before:
+```cpp
+delete *it;
+booksList.erase(it);
+std::cout << "Book deleted.\n";
+```
+After:
+```cpp
+delete *it;
+booksList.erase(it);
+SaveToJsonFile(dataFilePath);
+std::cout << "Book deleted.\n";
+```
+
