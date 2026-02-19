@@ -1,0 +1,16 @@
+{
+  "patrons": [
+    {
+      "patronID": 1,
+      "name": "Wes Roddie",
+      "fineBalance": 0,
+      "numBooks": 1
+    },
+    {
+      "patronID": 2,
+      "name": "Wes Roddie",
+      "fineBalance": 0,
+      "numBooks": 0
+    }
+  ]
+}

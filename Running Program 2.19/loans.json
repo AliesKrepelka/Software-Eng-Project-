@@ -1,0 +1,13 @@
+{
+  "loans": [
+    {
+      "loanID": 1,
+      "bookID": 1,
+      "patronID": 1,
+      "dueYear": 2026,
+      "dueMonth": 2,
+      "dueDay": 16,
+      "status": 1
+    }
+  ]
+}
