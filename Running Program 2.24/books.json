@@ -1,0 +1,12 @@
+{
+  "books": [
+    {
+      "libraryID": 1,
+      "title": "Bible",
+      "author": "God",
+      "isbn": 1,
+      "cost": 80,
+      "status": 0
+    }
+  ]
+}
