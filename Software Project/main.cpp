@@ -173,7 +173,7 @@ void loanOptions(LoansCollection& loans, PatronsCollection& patrons, BooksCollec
             break;
         case 3:
             // Display all books that are past their due date
-            loans.ListAllOverdueBooks();
+            loans.ListAllOverdueBooks(patrons, books);
             break;
         case 4:
             // Display all currently checked out books (requires book collection for details)

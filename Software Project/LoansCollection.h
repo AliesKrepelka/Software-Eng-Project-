@@ -19,8 +19,8 @@ public:
     // Checks in a book from a patron
     void CheckInBook(PatronsCollection &allPatrons, BooksCollection &allBooks);
 
-    // Lists all overdue books
-    void ListAllOverdueBooks();
+    // Lists all overdue books with patron and book details
+    void ListAllOverdueBooks(PatronsCollection &allPatrons, BooksCollection &allBooks);
 
     // Lists all currently checked out books
     void ListAllCheckedOutBooks(BooksCollection &allBooks);

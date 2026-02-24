@@ -5,6 +5,7 @@
 #include <fstream>
 #include <regex>
 #include <sstream>
+#include <cmath>
 
 /**
  * Gets the current system date and time
@@ -49,15 +50,21 @@ int calculateDaysDifference(const std::tm& dueDate, const std::tm& currentDate) 
     std::tm dueCopy = dueDate;
     std::tm curCopy = currentDate;
 
+    // Normalize both dates to noon so we only compare calendar days
+    dueCopy.tm_hour = curCopy.tm_hour = 12;
+    dueCopy.tm_min = curCopy.tm_min = 0;
+    dueCopy.tm_sec = curCopy.tm_sec = 0;
+
     // Convert tm structures to time_t (seconds since epoch)
     std::time_t due_time = std::mktime(&dueCopy);
     std::time_t current_time = std::mktime(&curCopy);
 
     // Define seconds in a day
-    const double secondsPerDay = 60 * 60 * 24;
+    const double secondsPerDay = 86400.0;
 
     // Calculate difference in days (difftime returns seconds)
-    return static_cast<int>(std::difftime(due_time, current_time) / secondsPerDay);
+    double days = std::difftime(due_time, current_time) / secondsPerDay;
+    return static_cast<int>(std::floor(days + 1e-9));
 }
 
 /**
@@ -198,6 +205,29 @@ void LoansCollection::CheckInBook(PatronsCollection& allPatrons, BooksCollection
         // Store pointer to loan for deletion
         Loans* toDelete = *it;
 
+        // Calculate and apply fine if the book is overdue
+        std::tm dueDate = toDelete->getDueDate();
+        std::tm today = getCurrentDate();
+        int daysDiff = calculateDaysDifference(dueDate, today);
+
+        if (daysDiff < 0) {
+            int daysLate = -daysDiff;
+            const double finePerDay = 0.50;
+            double fine = daysLate * finePerDay;
+            double newBalance = std::round((patron->getFineBalance() + fine) * 100.0) / 100.0;
+            patron->setFineBalance(static_cast<float>(newBalance));
+
+            int fineCents = static_cast<int>(std::round(fine * 100));
+            int fineWhole = fineCents / 100;
+            int fineFraction = fineCents % 100;
+
+            std::cout << "Book overdue by " << daysLate << " days. Fine $"
+                << fineWhole << "." << (fineFraction < 10 ? "0" : "") << fineFraction
+                << " applied. New balance: $" << newBalance << "\n";
+
+            allPatrons.SaveToJsonFile("patrons.json");
+        }
+
         // Remove from collection
         loansList.erase(it);
 
@@ -221,7 +251,7 @@ void LoansCollection::CheckInBook(PatronsCollection& allPatrons, BooksCollection
  * Lists all books that are past their due date
  * Compares each loan's due date with current date
  */
-void LoansCollection::ListAllOverdueBooks() {
+void LoansCollection::ListAllOverdueBooks(PatronsCollection& allPatrons, BooksCollection& allBooks) {
     std::cout << "Overdue Books:\n";
 
     // Iterate through all loans
@@ -233,8 +263,17 @@ void LoansCollection::ListAllOverdueBooks() {
         std::tm today = getCurrentDate();
 
         // Calculate days difference (negative means overdue)
-        if (calculateDaysDifference(dueDate, today) < 0) {
-            std::cout << "Loan ID " << loan->getLoanID() << " is overdue.\n";
+        int daysDiff = calculateDaysDifference(dueDate, today);
+        if (daysDiff < 0) {
+            Patron* patron = allPatrons.FindPatronByID(loan->getPatronID());
+            Books* book = allBooks.FindBookByID(loan->getBookID());
+
+            std::string patronName = patron ? patron->getName() : "Unknown";
+            std::string bookTitle = book ? book->getTitle() : "Unknown";
+
+            std::cout << "Borrower: " << patronName << " (ID: " << loan->getPatronID()
+                << "), Book: " << bookTitle
+                << ", Overdue by " << -daysDiff << " days.\n";
         }
     }
 }
